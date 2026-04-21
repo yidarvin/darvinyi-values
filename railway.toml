@@ -1,0 +1,13 @@
+[build]
+builder = "NIXPACKS"
+
+[[services]]
+name = "values-api"
+source = "api"
+startCommand = "node index.js"
+
+[[services]]
+name = "values-web"
+source = "web"
+startCommand = "npx vite preview --host --port $PORT"
+buildCommand = "npm run build"

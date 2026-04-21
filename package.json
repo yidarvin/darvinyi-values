@@ -2,7 +2,7 @@
   "name": "darvinyi-values",
   "version": "1.0.0",
   "scripts": {
-    "build": "npm install --prefix web && npm run build --prefix web",
+    "build": "npm install --include=dev --prefix web && npm run build --prefix web",
     "start": "node api/scripts/migrate.js && node api/scripts/seed-values.js && node index.js",
     "dev": "node index.js"
   },

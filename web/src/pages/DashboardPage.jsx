@@ -104,6 +104,12 @@ export default function DashboardPage() {
     load();
   }, []);
 
+  async function deleteSession(id) {
+    if (!window.confirm('Delete this session? This cannot be undone.')) return;
+    await client.delete(`/sessions/${id}`);
+    setSessions(prev => prev.filter(s => s.id !== id));
+  }
+
   async function startSession() {
     setCreating(true);
     try {
@@ -174,6 +180,7 @@ export default function DashboardPage() {
                   ) : (
                     <Link to={`/session/${s.id}`} style={styles.actionLink}>Resume →</Link>
                   )}
+                  <button onClick={() => deleteSession(s.id)} style={styles.deleteBtn} title="Delete session">✕</button>
                 </div>
               </div>
             ))}
@@ -344,6 +351,19 @@ const styles = {
   badgeInProgress: {
     background: 'rgba(200, 169, 110, 0.12)',
     color: 'var(--accent)',
+  },
+  deleteBtn: {
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--text-muted)',
+    fontSize: '0.85rem',
+    cursor: 'pointer',
+    padding: '4px 6px',
+    borderRadius: '4px',
+    lineHeight: 1,
+    minHeight: '44px',
+    minWidth: '44px',
+    opacity: 0.5,
   },
   actionLink: {
     color: 'var(--accent)',

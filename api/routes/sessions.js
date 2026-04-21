@@ -19,7 +19,7 @@ function fisherYates(arr) {
 }
 
 function formatSessionName() {
-  return `Session — ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+  return `Session — ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
 }
 
 async function getSessionForUser(sessionId, userId) {
@@ -136,6 +136,13 @@ router.get('/:id/export', async (req, res) => {
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', `attachment; filename="values-session-${session.id}.csv"`);
   res.send(csv);
+});
+
+router.delete('/:id', async (req, res) => {
+  const session = await getSessionForUser(req.params.id, req.user.userId);
+  if (!session) return res.status(403).json({ error: 'Forbidden' });
+  await pool.query('DELETE FROM sessions WHERE id = $1', [session.id]);
+  res.json({ ok: true });
 });
 
 module.exports = router;

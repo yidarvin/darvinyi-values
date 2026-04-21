@@ -6,8 +6,15 @@ async function migrate() {
   const sql = fs.readFileSync(path.join(__dirname, '../sql/schema.sql'), 'utf8');
   await pool.query(sql);
 
-  // Remove duplicate values_list rows caused by repeated seeding without a unique constraint,
-  // keeping the row with the lowest id for each original_order.
+  // Remove ratings that point to duplicate value rows (keep only the canonical MIN(id) per original_order).
+  await pool.query(`
+    DELETE FROM session_values
+    WHERE value_id NOT IN (
+      SELECT MIN(id) FROM values_list GROUP BY original_order
+    )
+  `);
+
+  // Now safe to delete the duplicate values_list rows.
   await pool.query(`
     DELETE FROM values_list
     WHERE id NOT IN (
@@ -15,7 +22,7 @@ async function migrate() {
     )
   `);
 
-  // Add unique constraint if it doesn't already exist.
+  // Add unique constraint if not already present.
   await pool.query(`
     DO $$
     BEGIN

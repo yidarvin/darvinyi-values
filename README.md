@@ -2,43 +2,56 @@
 
 A personal values sorting tool. Rate 107 values by importance, save progress across sessions, and track how your priorities shift over time.
 
+## How it works
+
+Express serves both the API (`/api/*`) and the built React frontend as static files — one process, one port, one Railway service.
+
 ## Local development
 
-### API
-
 ```bash
-cd api
+# 1. Install everything
+npm install
+npm run build        # builds the React app into web/dist
+
+# 2. Set env vars
 cp .env.example .env
 # Fill in DATABASE_URL and JWT_SECRET
-npm install
-npm start   # migrates, seeds, then starts server on :3001
+
+# 3. Start
+npm start            # migrates DB, seeds values, starts server on :3001
 ```
 
-### Web
+For frontend hot-reload during development, run in two terminals:
 
 ```bash
-cd web
-cp .env.example .env
-# Set VITE_API_URL=http://localhost:3001
-npm install
-npm run dev   # starts on :5173
+# Terminal 1 — API server
+node index.js
+
+# Terminal 2 — Vite dev server (proxies /api to :3001)
+cd web && npm run dev
 ```
 
-## Deploy (Railway)
+Then open http://localhost:5173.
 
-1. Push repo to GitHub
-2. Create a new Railway project → "Deploy from GitHub repo"
-3. Add a PostgreSQL plugin to the project
-4. Create two services:
-   - **values-api** → root directory: `api`, start: `node index.js`
-   - **values-web** → root directory: `web`, build: `npm run build`, start: `npx vite preview --host --port $PORT`
-5. Set env vars on `values-api`:
-   - `DATABASE_URL` (auto-set by Railway Postgres plugin)
-   - `JWT_SECRET` (any long random string)
-   - `FRONTEND_URL` (Railway URL for the web service, or `https://values.darvinyi.com`)
-   - `NODE_ENV=production`
-6. Set env vars on `values-web`:
-   - `VITE_API_URL` (Railway URL for the API service)
-7. Add custom domain `values.darvinyi.com` to the web service in Railway settings
+## Deploy to Railway
 
-The `start` script in `api/package.json` runs migrations and seeding automatically on every deploy — no manual steps needed.
+1. Push this repo to GitHub
+2. Go to Railway → New Project → Deploy from GitHub repo → select this repo
+3. Add a **PostgreSQL** plugin to the project
+4. Railway auto-detects the root `package.json` and `railway.toml`
+5. Set two environment variables on the service:
+   - `JWT_SECRET` — any long random string
+   - `DATABASE_URL` — auto-filled by the Postgres plugin (copy the value from the plugin's "Connect" tab if not auto-linked)
+6. Deploy — Railway runs `npm run build` then `npm start`
+7. (Optional) Add a custom domain in the Railway service settings → `values.darvinyi.com`
+
+Every `git push` to your main branch triggers an automatic redeploy.
+
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | Yes | PostgreSQL connection string (set by Railway Postgres plugin) |
+| `JWT_SECRET` | Yes | Secret for signing JWTs — any random string |
+| `PORT` | No | Defaults to 3001 |
+| `NODE_ENV` | No | Set to `production` in Railway |

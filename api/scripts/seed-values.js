@@ -113,7 +113,7 @@ const values = [
 async function seed() {
   for (const v of values) {
     await pool.query(
-      'INSERT INTO values_list (name, definition, original_order) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+      'INSERT INTO values_list (name, definition, original_order) VALUES ($1, $2, $3) ON CONFLICT (original_order) DO NOTHING',
       [v.name, v.definition, v.original_order]
     );
   }

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS values_list (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   definition TEXT NOT NULL,
-  original_order INTEGER NOT NULL
+  original_order INTEGER NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS sessions (

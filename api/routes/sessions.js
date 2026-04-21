@@ -23,6 +23,7 @@ function formatSessionName() {
 }
 
 async function getSessionForUser(sessionId, userId) {
+  if (!/^\d+$/.test(String(sessionId))) return null;
   const result = await pool.query(
     'SELECT * FROM sessions WHERE id = $1 AND user_id = $2',
     [sessionId, userId]

@@ -66,39 +66,28 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const [sessionsRes, valuesRes] = await Promise.all([
-        client.get('/sessions'),
-        client.get('/sessions/values-map').catch(() => ({ data: null })),
-      ]);
+      const sessionsRes = await client.get('/sessions');
       const rawSessions = sessionsRes.data;
 
       const completedIds = rawSessions.filter(s => s.status === 'complete').map(s => s.id);
       const ratingsBySession = {};
+      let vm = {};
+
       await Promise.all(
         completedIds.map(async id => {
           const r = await client.get(`/sessions/${id}`);
           ratingsBySession[id] = r.data.ratings;
-          if (!Object.keys(valuesMap).length && r.data.valuesMap) {
-            setValuesMap(r.data.valuesMap);
+          if (!Object.keys(vm).length && r.data.valuesMap) {
+            vm = r.data.valuesMap;
           }
         })
       );
 
-      const enriched = rawSessions.map(s => ({
+      setValuesMap(vm);
+      setSessions(rawSessions.map(s => ({
         ...s,
         _ratings: ratingsBySession[s.id] || null,
-      }));
-
-      const firstComplete = completedIds[0];
-      if (firstComplete && enriched.find(s => s.id === firstComplete)?._ratings) {
-        const vm = enriched.find(s => s.id === firstComplete);
-        if (vm) {
-          const r = await client.get(`/sessions/${firstComplete}`);
-          setValuesMap(r.data.valuesMap);
-        }
-      }
-
-      setSessions(enriched);
+      })));
       setLoading(false);
     }
     load();
